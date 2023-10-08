@@ -1,119 +1,193 @@
-import React from 'react';
-import Chart from "chart.js/auto";
+import React, { useEffect, useRef,useState } from 'react';
 import axios from 'axios';
-const baseURL = "http://localhost:3001";
+import Chart from 'chart.js/auto'
+import * as d3 from 'd3';
+
 function HomePage() {
-    var dataSource = {
+    const [dataSource, setDataSource] = useState({
         datasets: [
-            {
-                data: [],
-                backgroundColor: [
-                    '#ffcd56',
-                    '#ff6384',
-                    '#36a2eb',
-                    '#cc65fe',
-                    '#ff9442',
-                    '#4bc0c0',
-                    '#ff66c3'
-                ],
-            }
+          {
+            data: [],
+            backgroundColor: [
+              '#ffcd56',
+              '#ff6384',
+              '#36a2eb',
+              '#cc65fe',
+              '#ff9442',
+              '#4bc0c0',
+              '#ff66c3'
+            ],
+          },
         ],
-        labels: []
-    };
+        labels: [],
+      });
 
-    React.useEffect(() => {
-        axios.get(baseURL+'/budget').then((response) => {
-            for (var i = 0; i < response.data.myBudget.length; i++) {
-                dataSource.datasets[0].data[i] = response.data.myBudget[i].budget;
-                dataSource.labels[i] = response.data.myBudget[i].title;
-            }
-            createChart();
-        });
-      }, []);
+       useEffect(() => {
+    axios.get('http://localhost:3001/budget').then(function (res) {
+      const updateData = { ...dataSource }; 
+      for (var i = 0; i < res.data.myBudget.length; i++) {
+        updateData.datasets[0].data[i] = res.data.myBudget[i].budget;
+        updateData.labels[i] = res.data.myBudget[i].title;
+      }
 
-    function createChart() {
-        var ctx = document.getElementById('myChart').getContext('2d');
-        let chartStatus = Chart.getChart("myChart");
+      setDataSource(updateData);
+    });
+  }, []);
+      const chartRef = useRef(null);
+      const svgRef = useRef(null)
 
-        if (chartStatus !== undefined) {
-            chartStatus.destroy();
-        }
-    
-        var myPieChart = new Chart(ctx, {
+      useEffect(() => {
+        if (chartRef.current ) {
+          const chart = new Chart(chartRef.current, {
             type: 'pie',
-            data: dataSource
-        });
-    }
-  return (
-    <main id="main">
-
-    <div class="container center">
-        <div class="page-area">
-            <pb-article>
-                <h1>Stay on track</h1>
-                <div>
-                    Do you know where you are spending your money? If you really stop to track it down,
-                    you would get surprised! Proper budget management depends on real data... and this
-                    app will help you with that!
-                </div>      
-            </pb-article>
-
+            data: dataSource,
+          });
+    
+          return () => {
+            chart.destroy();
+          };
+        }
+      }, [dataSource]);
+    
+      useEffect(() => {
+        if (svgRef.current ) {
+         
+          const width = 300;
+          const height = 300;
+          const radius = Math.min(width, height) / 2;
+    
+          const svg = d3.select(svgRef.current).attr('width', width).attr('height', height);
+          const g = svg.append('g').attr('transform', `translate(${width / 2},${height / 2})`);
+    
+          const color = d3.scaleOrdinal(d3.schemeCategory10);
+    
+          const pie = d3.pie().value((d) => d);
+    
+          const path = d3.arc().outerRadius(radius - 10).innerRadius(0);
+    
+          const arc = g.selectAll('.arc').data(pie(dataSource.datasets[0].data)).enter().append('g').attr('class', 'arc');
+    
+          arc
+            .append('path')
+            .attr('d', path)
+            .attr('fill', (d, i) => color(i))
+            .attr('stroke', 'white')
+            .style('stroke-width', '2px');
+    
+          arc
+            .append('text')
+            .attr('transform', (d) => `translate(${path.centroid(d)})`)
+            .attr('dy', '0.35em')
+            .text((d, i) => dataSource.labels[i]);
+        }
+      }, [dataSource]);
         
-                <pb-article>
-                    <h1>Alerts</h1>
-                    <div>
-                        What if your clothing budget ended? You will get an alert. The goal is to never go over the budget.
-                    </div>      
-                </pb-article>
-
-
-                <pb-article>
-                    <h1>Results</h1>
-                    <div>
-                        People who stick to a financial plan, budgeting every expense, get out of debt faster!
-                    Also, they to live happier lives... since they expend without guilt or fear...
-                    because they know it is all good and accounted for.
-                    </div>      
-                </pb-article>
-                
-                <pb-article>
+    
+    return (
+        <main  className="center" id="main" aria-label="main">
+            
+                <div className="page-area">    
+                    <article>
                     <h1>Stay on track</h1>
-                    <div>
+                    <p>
                         Do you know where you are spending your money? If you really stop to track it down,
                         you would get surprised! Proper budget management depends on real data... and this
                         app will help you with that!
-                    </div>      
-                </pb-article>
-    
-            
-                    <pb-article>
-                        <h1>Alerts</h1>
-                        <div>
-                            What if your clothing budget ended? You will get an alert. The goal is to never go over the budget.
-                        </div>      
-                    </pb-article>
-    
-    
-                    <pb-article>
-                        <h1>Results</h1>
-                        <div>
-                            People who stick to a financial plan, budgeting every expense, get out of debt faster!
-                        Also, they to live happier lives... since they expend without guilt or fear...
+                    </p>
+                </article>
+                
+        
+                
+                <article>
+                    <h1>Alerts</h1>
+                    <p>
+                        What if your clothing budget ended? You will get an alert. The goal is to never go over the budget.
+                    </p>
+                </article>
+                
+        
+                
+                <article>
+                    <h1>Results</h1>
+                    <p>
+                        People who stick to a financial plan, budgeting every expense, get out of debt faster!
+                        Also, they to live happier lives... since they expend without guilt or fear... 
                         because they know it is all good and accounted for.
-                        </div>      
-                    </pb-article>
-            
-                    <div class="text-box">
-                <h1>Charts</h1>
-                <p>
-                    <canvas id="myChart" width="200" height="200"></canvas>
-                </p>
-            </div>
-  
-        </div>
-    </div>
-</main>
-  );
-}
+                    </p>
+                </article>
+                
+        
+                
+    
+                <article>
+                    
+                    <h1>Free</h1>
+                    <p>
+                        This app is free!!! And you are the only one holding your data!
+                    </p>
+                </article>
+                
+        
+                <article>
+                    <h1>Stay on track</h1>
+                    <p>
+                        Do you know where you are spending your money? If you really stop to track it down,
+                        you would get surprised! Proper budget management depends on real data... and this
+                        app will help you with that!
+                    </p>
+                </article>
+                
+               
+                
+                <article>
+                    <h1>Alerts</h1>
+                    <p>
+                        What if your clothing budget ended? You will get an alert. The goal is to never go over the budget.
+                    </p>
+                </article>
+                
+        
+               
+                <article>
+                    <h1>Results</h1>
+                    <p>
+                        People who stick to a financial plan, budgeting every expense, get out of debt faster!
+                        Also, they to live happier lives... since they expend without guilt or fear... 
+                        because they know it is all good and accounted for.
+                    </p>
+                </article>
+                
+           <article>
+                
+                    <h1>Free</h1>
+                    <p>
+                        This app is free!!! And you are the only one holding your data!
+                    </p>
+                
+            </article>
+            <section className="chart-container">
+            <article className="chart">
+                <h1>Chart</h1>
+                    <p>
+                        <canvas ref={chartRef} />
+                    </p>
+             
+            </article>
+    
+            <article className="chart">
+                <h1>D3JS Chart</h1>
+                <svg ref={svgRef}></svg>
+                
+                
+            </article>
+        </section>       
+        </div>  
+        </main>
+        
+     
 
-export default HomePage;
+    );
+    
+  }
+  
+  export default HomePage;
