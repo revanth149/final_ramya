@@ -1,20 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 
-
-const LoginPage = (props) => {
-  const history=useNavigate()
-  const { login } = useAuth();
+function SignupPage() {
+  const history = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
   });
 
   const [error, setError] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleInputChange = (e) => {
@@ -25,38 +21,30 @@ const LoginPage = (props) => {
     });
   };
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
 
-  
     axios
-    .post('http://localhost:3002/login', formData)
+    .post('http://localhost:3002/Signup', formData)
     .then((response) => {
       setSuccessMessage(response.data.message);
-      if(response.data.user) {
-        localStorage.setItem('userId', (response.data.user._id.toString()));
-       
-      }
-      localStorage.setItem('token',(response.data.token))
-      login();
-      setIsLoggedIn(true);
-      props.callBack(true);
-      history('/')
+      setError('');
+      history('/login')
     })
     .catch((error) => {
-      setError('');
-      setSuccessMessage('Invalid username or password');
+      setError('Error signing up. Please try again.');
+      setSuccessMessage('');
     })
   };
 
-
-
   return (
-    <section style={{ textAlign: 'center', padding: '20px',position:'relative' }}>
-    <section style={{ display: 'inline-block', textAlign: 'left' }}>
-      <h2 style={{marginLeft:'50px',fontSize:'20px'}}>Login</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleLogin}>
+    <div style={{ textAlign: 'center', padding: '20px',position:'relative' }}>
+      <form onSubmit={handleSignup}>
+        <h2>Signup</h2>
+
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+
         <label htmlFor="username" >Username:</label>
         <input
           type="text"
@@ -64,10 +52,11 @@ const LoginPage = (props) => {
           name="username"
           value={formData.username}
           onChange={handleInputChange}
-          required
           style={{marginTop:'10px',marginBottom:'20px',marginLeft:'5px'}}
+          required
         />
         <br />
+
         <label htmlFor="password">Password:</label>
         <input
           type="password"
@@ -75,15 +64,15 @@ const LoginPage = (props) => {
           name="password"
           value={formData.password}
           onChange={handleInputChange}
+          style={{marginBottom:'15px',marginLeft:'5px'}}
           required
-          style={{marginBottom:'10px',marginLeft:'5px'}}
         />
         <br />
-        <button type="submit" style={{marginLeft:'50px',fontWeight:'600',letterSpacing:'0.05em'}}>Login</button>
-      </form>
-    </section>
-  </section>
-  );
-};
 
-export default LoginPage;
+        <button type="submit" style={{fontWeight:'600',letterSpacing:'0.05em'}}>Signup</button>
+      </form>
+    </div>
+  );
+}
+
+export default SignupPage;

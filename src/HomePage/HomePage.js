@@ -23,7 +23,7 @@ function HomePage() {
       });
 
        useEffect(() => {
-    axios.get('http://localhost:3001/budget').then(function (res) {
+    axios.get('http://localhost:3002/budget').then(function (res) {
       const updateData = { ...dataSource }; 
       for (var i = 0; i < res.data.myBudget.length; i++) {
         updateData.datasets[0].data[i] = res.data.myBudget[i].budget;
