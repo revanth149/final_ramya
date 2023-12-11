@@ -10,7 +10,7 @@ const bodyParser = require("body-parser");
 const SignupSchema = require("./models/SignupModel");
 const BudgetSchema = require("./models/BudgetModel");
 const ExpenseSchema = require("./models/ExpenseModel");
-let url = "mongodb://127.0.0.1:27017/personal-budget";
+let url = "mongodb+srv://doadmin:k7cQ4nxKfZ368012@db-final-809f69e5.mongo.ondigitalocean.com/admin?tls=true&authSource=admin&replicaSet=db-final";
 
 const bcrypt = require("bcrypt");
 const port = 3002;
